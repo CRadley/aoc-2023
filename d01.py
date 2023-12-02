@@ -1,4 +1,4 @@
-with open("input") as file:
+with open("inputs/d01") as file:
     data = [l for l in file.read().split("\n")]
 
 DIGIT_MAP = {
