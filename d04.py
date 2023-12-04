@@ -1,7 +1,7 @@
 import re
 import math
 
-with open("input") as file:
+with open("inputs/d04") as file:
     cards = [re.split("\s+", line) for line in file.read().split("\n")]
     pipe_index = cards[0].index("|")
 
