@@ -101,6 +101,7 @@ class Node:
                     buffer = [buffer[-1], p]
         lines.append(buffer[:])
 
+        # Gauss's Area Formula (Shoelace formula) + Rearranged
         z = [(line[-1] % resolution, line[-1] // resolution) for line in lines]
         area = 0
         for i, v in enumerate(z):
@@ -112,7 +113,8 @@ class Node:
                 next_y = z[i + 1][1]
             area += (v[0] * next_y) - (v[1] * next_x)
         area = abs(area) // 2
-        return area
+        enclosed_points = area + 1 - len(points) / 2
+        return math.ceil(enclosed_points)
 
     def __eq__(self, node):
         return self.index == node.index
@@ -125,15 +127,10 @@ def find_starting_index(height_map):
     return height_map.index("S")
 
 
-def find_end_index(height_map):
-    return height_map.index("S")
-
-
 def determine_loop(pipe_map, resolution):
     starting_index = find_starting_index(pipe_map)
-    ending_index = find_end_index(pipe_map)
     start_node = Node(starting_index, None)
-    end_node = Node(ending_index, None)
+    end_node = Node(starting_index, None)
     open_nodes = []
     closed_nodes = {}
     heappush(open_nodes, start_node)
