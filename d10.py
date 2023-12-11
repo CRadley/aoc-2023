@@ -101,7 +101,7 @@ class Node:
                     buffer = [buffer[-1], p]
         lines.append(buffer[:])
 
-        # Gauss's Area Formula (Shoelace formula) + Rearranged
+        # Gauss's Area Formula (Shoelace formula) + Rearranged Pick's Formula to determine number of enclosed points
         z = [(line[-1] % resolution, line[-1] // resolution) for line in lines]
         area = 0
         for i, v in enumerate(z):
