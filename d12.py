@@ -24,3 +24,12 @@ for i, row in enumerate(data):
             match_lengths = [len(x) for x in matches]
             p1 += match_lengths == row[1]
 print(p1)
+unfolded = [
+    (
+        "?".join(row[0] for _ in range(5)),
+        row[1] * 5,
+    )
+    for _ in range(5)
+    for row in data
+]
+print(unfolded)
