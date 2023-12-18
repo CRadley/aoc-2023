@@ -1,4 +1,4 @@
-with open("input") as file:
+with open("inputs/d05") as file:
     lines = [line for line in file.read().splitlines() if line]
 
 seeds = list(map(int, lines[0].split(" ")[1:]))

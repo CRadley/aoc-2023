@@ -2,7 +2,7 @@ import re
 import math
 
 
-with open("input6") as file:
+with open("inputs/d06") as file:
     lines = [re.split(r"\s+", line) for line in file.read().splitlines()]
     races = [
         (int(values[0]), int(values[1]))

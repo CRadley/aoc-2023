@@ -1,7 +1,7 @@
 from collections import Counter
 
 
-with open("input") as file:
+with open("inputs/d07") as file:
     data = [line.split() for line in file.read().splitlines()]
 
 RANKINGS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]

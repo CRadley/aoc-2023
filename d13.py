@@ -1,7 +1,7 @@
 from typing import List
 
 
-with open("input13") as file:
+with open("inputs/d13") as file:
     mirror_fields = [
         [list(line) for line in e.splitlines()] for e in file.read().split("\n\n")
     ]

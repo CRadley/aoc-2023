@@ -1,4 +1,4 @@
-with open("input9") as file:
+with open("inputs/d09") as file:
     sequences = [list(map(int, line.split(" "))) for line in file.read().splitlines()]
 
 

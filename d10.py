@@ -179,7 +179,7 @@ NEXT_DIRECTIONS = {
 }
 
 
-with open("10") as file:
+with open("inputs/d10") as file:
     file_input = file.read().splitlines()
 pipe_map = [c for line in file_input for c in line]
 resolution = len(file_input[0])

@@ -1,7 +1,7 @@
 import itertools
 import math
 
-with open("input") as file:
+with open("inputs/d08") as file:
     lines = file.read().splitlines()
     moves = lines[0]
     data = {
