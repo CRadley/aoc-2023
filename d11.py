@@ -1,4 +1,4 @@
-with open("input11") as file:
+with open("inputs/d11") as file:
     galaxy = [list(line) for line in file.read().splitlines()]
 
 
