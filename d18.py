@@ -20,49 +20,67 @@ fixed_dig_plan = [
 ]
 
 
-def determine_coordinates(dig_plan):
-    x = 0
-    y = 0
-    coordinates = {(x, y)}
+def determine_ranges(dig_plan):
+    position = (0, 0)
+    ranges = []
     for direction, num, _ in dig_plan:
         num = int(num)
-        for _ in range(num):
-            x += 1 if direction == "R" else -1 if direction == "L" else 0
-            y += 1 if direction == "U" else -1 if direction == "D" else 0
-            coordinates.add((x, y))
-    return coordinates
+        x = position[0] + (num if direction == "R" else -num if direction == "L" else 0)
+        y = position[1] + (num if direction == "U" else -num if direction == "D" else 0)
+        new_position = (x, y)
+        ranges.append((position, new_position))
+        position = new_position
+    return ranges
 
 
-def determine_internal_volume(coordinates):
-    groups = defaultdict(set)
-    for x, y in coordinates:
-        groups[x].add(y)
-    starting_group = next((g for g in groups.items() if len(g[1]) == 2), None)
-    starting_point = sum(starting_group[1]) // 2
-    stack = [(starting_group[0], starting_point)]
+def determine_starting_point(ranges):
+    starting = [r for r in ranges if (0, 0) in r]
+    x = starting[0][1][0]
+    y = starting[1][0][1]
+    return x // abs(x), y // abs(y)
 
-    filled = {}
+
+def is_perimeter(ranges, point):
+    for (x1, y1), (x2, y2) in ranges:
+        if x1 == x2 == point[0] and min((y1, y2)) <= point[1] <= max((y1, y2)):
+            return True
+        elif y1 == y2 == point[1] and min((x1, x2)) <= point[0] <= max((x1, x2)):
+            return True
+    return False
+
+
+def determine_next_points(point):
+    return [
+        (point[0] - 1, point[1]),
+        (point[0] + 1, point[1]),
+        (point[0], point[1] - 1),
+        (point[0], point[1] + 1),
+    ]
+
+
+def determine_internal_volume(ranges):
+    starting_point = determine_starting_point(ranges)
+    stack = [starting_point]
+    filled = {starting_point: None}
     while stack:
         point = stack.pop()
-        n = [
-            (point[0] - 1, point[1]),
-            (point[0] + 1, point[1]),
-            (point[0], point[1] - 1),
-            (point[0], point[1] + 1),
-        ]
+        n = determine_next_points(point)
         for _n in n:
-            if _n in filled or _n in coordinates:
+            if _n in filled or is_perimeter(ranges, _n):
                 continue
             filled[_n] = None
             stack.insert(0, _n)
-    return filled
+    return len(filled)
 
 
 def determine_lava_volume(dig_plan):
-    coordinates = determine_coordinates(dig_plan)
-    filled = determine_internal_volume(coordinates)
-    return len(filled) + len(coordinates)
+    ranges = determine_ranges(dig_plan)
+    filled = determine_internal_volume(ranges)
+    return filled + sum(abs(x1 - x2) + abs(y1 - y2) for (x1, y1), (x2, y2) in ranges)
 
 
 p1 = determine_lava_volume(dig_plan)
 print(p1)
+
+# p2 = determine_lava_volume(fixed_dig_plan)
+# print(p2)
