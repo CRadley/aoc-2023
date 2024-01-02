@@ -24,16 +24,16 @@ class Node:
         heat_loss: int = 0,
         steps_in_direction: int = 0,
         direction: Direction = None,
-        steps: int = 0,
     ) -> None:
         self.index = index
         self.prev: Self = prev
         self.heat_loss = heat_loss
         self.steps_in_direction = steps_in_direction
         self.direction = direction
-        self.steps = steps
 
-    def determine_next_moves(self, city: List[str], resolution: int) -> List[Self]:
+    def determine_next_moves(
+        self, city: List[str], resolution: int, min_moves: int, max_moves: int
+    ) -> List[Self]:
         if not self.direction:
             return [
                 Node(1, self, self.heat_loss, 1, Direction.RIGHT),
@@ -51,7 +51,6 @@ class Node:
             self.heat_loss,
             self.steps_in_direction * (self.direction == Direction.UP) + 1,
             Direction.UP,
-            self.steps + 1,
         )
         right_node = Node(
             self.index + 1,
@@ -59,7 +58,6 @@ class Node:
             self.heat_loss,
             self.steps_in_direction * (self.direction == Direction.RIGHT) + 1,
             Direction.RIGHT,
-            self.steps + 1,
         )
         down_node = Node(
             self.index + resolution,
@@ -67,7 +65,6 @@ class Node:
             self.heat_loss,
             self.steps_in_direction * (self.direction == Direction.DOWN) + 1,
             Direction.DOWN,
-            self.steps + 1,
         )
         left_node = Node(
             self.index - 1,
@@ -75,23 +72,27 @@ class Node:
             self.heat_loss,
             self.steps_in_direction * (self.direction == Direction.LEFT) + 1,
             Direction.LEFT,
-            self.steps + 1,
         )
+        candidate = []
         if self.direction == Direction.UP:
-            candidate = [left_node, right_node]
-            if self.steps_in_direction < 3:
+            if self.steps_in_direction >= min_moves:
+                candidate.extend([left_node, right_node])
+            if self.steps_in_direction < max_moves:
                 candidate.append(up_node)
         elif self.direction == Direction.RIGHT:
-            candidate = [up_node, down_node]
-            if self.steps_in_direction < 3:
+            if self.steps_in_direction >= min_moves:
+                candidate.extend([up_node, down_node])
+            if self.steps_in_direction < max_moves:
                 candidate.append(right_node)
         elif self.direction == Direction.DOWN:
-            candidate = [left_node, right_node]
-            if self.steps_in_direction < 3:
+            if self.steps_in_direction >= min_moves:
+                candidate.extend([left_node, right_node])
+            if self.steps_in_direction < max_moves:
                 candidate.append(down_node)
         elif self.direction == Direction.LEFT:
-            candidate = [up_node, down_node]
-            if self.steps_in_direction < 3:
+            if self.steps_in_direction >= min_moves:
+                candidate.extend([up_node, down_node])
+            if self.steps_in_direction < max_moves:
                 candidate.append(left_node)
         actual = []
         for c in candidate:
@@ -111,41 +112,66 @@ class Node:
         return self.heat_loss < other.heat_loss
 
     def __eq__(self, other: Self) -> bool:
-        return self.index == other.index and self.direction == other.direction
+        return (
+            self.index == other.index
+            and self.direction == other.direction
+            and self.steps_in_direction == other.steps_in_direction
+        )
 
     def __str__(self) -> str:
         return f"{self.index}, {self.direction}, {self.heat_loss}"
 
 
-def determine_lowest_heat_loss(city: List[int], resolution: int) -> Node:
+def determine_lowest_heat_loss(
+    city: List[int], resolution: int, min_moves: int, max_moves: int
+) -> Node:
     start_node = Node(0)
-    end_node = Node(len(city) - 1)
+    end_index = len(city) - 1
     open_nodes = []
     closed_nodes = {}
+    _open_nodes = {}
     heappush(open_nodes, start_node)
     while open_nodes:
         current_node = heappop(open_nodes)
-        if current_node.index == end_node.index:
+        if (
+            current_node.index == end_index
+            and min_moves <= current_node.steps_in_direction
+        ):
             return current_node
-        for node in current_node.determine_next_moves(city, resolution):
-            if (node.index, node.direction) in closed_nodes or node in open_nodes:
+        for node in current_node.determine_next_moves(
+            city, resolution, min_moves, max_moves
+        ):
+            if (
+                node.index,
+                node.direction,
+                node.steps_in_direction,
+            ) in closed_nodes or (
+                node.index,
+                node.direction,
+                node.steps_in_direction,
+            ) in _open_nodes:
                 continue
-            node.heat_loss += city[node.index]
+            node.heat_loss = node.prev.heat_loss + city[node.index]
             heappush(open_nodes, node)
+            _open_nodes[
+                (
+                    node.index,
+                    node.direction,
+                    node.steps_in_direction,
+                )
+            ] = None
 
-        closed_nodes[(current_node.index, current_node.direction)] = None
+        closed_nodes[
+            (
+                current_node.index,
+                current_node.direction,
+                current_node.steps_in_direction,
+            )
+        ] = None
     return start_node
 
 
-p1 = determine_lowest_heat_loss(city_blocks, resolution)
+p1 = determine_lowest_heat_loss(city_blocks, resolution, 0, 3)
 print(p1.heat_loss)
-
-# 885 too high
-
-m = city_blocks[:]
-curr = p1
-while curr:
-    m[curr.index] = curr.direction.value if curr.direction else "S"
-    curr = curr.prev
-for i in range(0, len(city_blocks), resolution):
-    print("".join(map(str, m[i : i + resolution])))
+p2 = determine_lowest_heat_loss(city_blocks, resolution, 4, 10)
+print(p2.heat_loss)
