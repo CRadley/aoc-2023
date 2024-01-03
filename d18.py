@@ -1,5 +1,4 @@
-import re
-from collections import defaultdict
+import re, math
 
 
 PATTERN = re.compile(r"(\w) ([\d]+) \(#([\d\w]+)\)")
@@ -20,67 +19,53 @@ fixed_dig_plan = [
 ]
 
 
-def determine_ranges(dig_plan):
+def determine_shape(dig_plan):
     position = (0, 0)
-    ranges = []
+    edges = []
+    corners = []
     for direction, num, _ in dig_plan:
         num = int(num)
         x = position[0] + (num if direction == "R" else -num if direction == "L" else 0)
         y = position[1] + (num if direction == "U" else -num if direction == "D" else 0)
         new_position = (x, y)
-        ranges.append((position, new_position))
+        edges.append((position, new_position))
         position = new_position
-    return ranges
+        corners.append(new_position)
+    return edges, corners
 
 
-def determine_starting_point(ranges):
-    starting = [r for r in ranges if (0, 0) in r]
-    x = starting[0][1][0]
-    y = starting[1][0][1]
-    return x // abs(x), y // abs(y)
+def calculate_area(corners):
+    a = 0
+    for i, (x, y) in enumerate(corners):
+        if i == len(corners) - 1:
+            _x = corners[0][0]
+            _y = corners[0][1]
+        else:
+            _x = corners[i + 1][0]
+            _y = corners[i + 1][1]
+        a += (x * _y) - (y * _x)
+    return abs(a) // 2
 
 
-def is_perimeter(ranges, point):
-    for (x1, y1), (x2, y2) in ranges:
-        if x1 == x2 == point[0] and min((y1, y2)) <= point[1] <= max((y1, y2)):
-            return True
-        elif y1 == y2 == point[1] and min((x1, x2)) <= point[0] <= max((x1, x2)):
-            return True
-    return False
+def calculate_perimeter(edges):
+    return sum(abs(x1 - x2) + abs(y1 - y2) for (x1, y1), (x2, y2) in edges)
 
 
-def determine_next_points(point):
-    return [
-        (point[0] - 1, point[1]),
-        (point[0] + 1, point[1]),
-        (point[0], point[1] - 1),
-        (point[0], point[1] + 1),
-    ]
-
-
-def determine_internal_volume(ranges):
-    starting_point = determine_starting_point(ranges)
-    stack = [starting_point]
-    filled = {starting_point: None}
-    while stack:
-        point = stack.pop()
-        n = determine_next_points(point)
-        for _n in n:
-            if _n in filled or is_perimeter(ranges, _n):
-                continue
-            filled[_n] = None
-            stack.insert(0, _n)
-    return len(filled)
+def calculate_internal_points(corners, perimeter):
+    a = calculate_area(corners)
+    enclosed_points = math.ceil(a + 1 - perimeter / 2)
+    return enclosed_points
 
 
 def determine_lava_volume(dig_plan):
-    ranges = determine_ranges(dig_plan)
-    filled = determine_internal_volume(ranges)
-    return filled + sum(abs(x1 - x2) + abs(y1 - y2) for (x1, y1), (x2, y2) in ranges)
+    edges, corners = determine_shape(dig_plan)
+    perimeter = calculate_perimeter(edges)
+    internal_points = calculate_internal_points(corners, perimeter)
+    return internal_points + perimeter
 
 
 p1 = determine_lava_volume(dig_plan)
 print(p1)
 
-# p2 = determine_lava_volume(fixed_dig_plan)
-# print(p2)
+p2 = determine_lava_volume(fixed_dig_plan)
+print(p2)
