@@ -1,4 +1,4 @@
-import re
+import re, math
 
 
 ITEM_PATTERN = re.compile(r"[\d]+")
@@ -51,7 +51,6 @@ def process_item(item, workflow_name):
     if workflow_name == "R":
         return 0
     workflow = workflows[workflow_name]
-    print(workflow_name)
     for action in workflow:
         if isinstance(action, str):
             if len(action) == 1:
@@ -64,8 +63,54 @@ def process_item(item, workflow_name):
             return process_item(item, action[1])
 
 
+def determine_valid_ranges(current, workflows, workflow_name):
+    valid_ranges = []
+    if workflow_name == "A":
+        return [current]
+    if workflow_name == "R":
+        return [None]
+    workflow = workflows[workflow_name]
+
+    for action in workflow:
+        if isinstance(action, str):
+            if workflow_name == "A":
+                valid_ranges.extend([current])
+            elif workflow_name == "R":
+                valid_ranges.extend([None])
+            else:
+                valid_ranges.extend(determine_valid_ranges(current, workflows, action))
+            continue
+        part, condition, value = action[0]
+        if condition == "<":
+            lower = current.copy()
+            lower[part] = (current[part][0], value - 1)
+            valid_ranges.extend(determine_valid_ranges(lower, workflows, action[1]))
+            current[part] = (value + 1, current[part][1])
+        else:
+            upper = current.copy()
+            upper[part] = (value + 1, current[part][1])
+            valid_ranges.extend(determine_valid_ranges(upper, workflows, action[1]))
+            current[part] = (current[part][0], value - 1)
+    return valid_ranges
+
+
 p1 = 0
 for item in items:
     if process_item(item, "in"):
         p1 += sum(v for v in item.values())
 print(p1)
+
+starting_ranges = {"x": (0, 4000), "m": (0, 4000), "a": (0, 4000), "s": (0, 4000)}
+
+valid_ranges = determine_valid_ranges(starting_ranges, workflows, "in")
+
+p2 = 0
+for valid_range in valid_ranges:
+    if valid_range is None:
+        continue
+    p2 += math.prod(v[1] - v[0] + 1 for v in valid_range.values())
+print(p2)
+
+
+# 167409079868000 expeted
+# 167414920672676 current
