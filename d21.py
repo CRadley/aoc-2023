@@ -27,7 +27,7 @@ def determine_steps(garden, position, resolution):
 
 
 queue = determine_steps(garden, starting_point, resolution)
-steps = 200
+steps = 64
 for _ in range(steps - 1):
     next_steps = []
     while queue:
