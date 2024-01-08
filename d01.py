@@ -40,7 +40,7 @@ def part_one(lines):
         int(
             f"{DIGIT_MAP[find_next_digit(line)]}{DIGIT_MAP[find_next_digit(line[::-1])]}"
         )
-        for line in data
+        for line in lines
     )
 
 
@@ -49,7 +49,7 @@ def part_two(lines):
         int(
             f"{DIGIT_MAP[find_next_digit_words(line, False)]}{DIGIT_MAP[find_next_digit_words(line[::-1], True)]}"
         )
-        for line in data
+        for line in lines
     )
 
 
