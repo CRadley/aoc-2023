@@ -1,9 +1,6 @@
-from typing import List, Self
+from typing import List, Self, Dict
 from heapq import heappush, heappop
 from dataclasses import dataclass
-import sys
-
-sys.setrecursionlimit(10000)
 
 with open("inputs/d23") as file:
     forest = [list(line) for line in file.read().splitlines()]
@@ -95,11 +92,75 @@ path = longest_path(forest, start, end)
 print(max(p.distance for p in path))
 
 
-def determine_next_moves_2(forest: List[List[str]], current: Node) -> List[Node]:
+@dataclass(frozen=True)
+class Point:
+    x: int
+    y: int
+
+
+@dataclass(frozen=True)
+class Edge:
+    to: Point
+    weight: int
+
+
+def walk_graph(
+    graph: Dict[Point, List[Edge]],
+    current: Point,
+    target: Point,
+    paths: List[int],
+    path: List[Node],
+    depth: int = 0,
+):
+    if current in path:
+        return
+    if current == target:
+        paths.append(depth)
+        return
+    path.append(current)
+    for edge in graph[current]:
+        walk_graph(graph, edge.to, target, paths, path, depth + edge.weight)
+    path.pop()
+
+
+def dfs(forest: List[List[str]], start: Node, target: Node) -> int:
+    paths = []
+    path = []
+    walk_graph(forest, start, target, paths, path)
+    return max(paths)
+
+
+def is_crossroad(forest: List[List[str]], cx: int, cy: int) -> bool:
+    if cx == 0 or cx == len(forest[-1]) - 1 or cy == 0 or cy == len(forest) - 1:
+        return True
+    walls = 0
+    for x, y in DIRECTIONS:
+        nx = x + cx
+        ny = y + cy
+        if forest[ny][nx] == "#":
+            walls += 1
+    return walls <= 1
+
+
+def determine_crossroads(forest: List[List[str]]):
+    c = []
+    for y, row in enumerate(forest):
+        for x, value in enumerate(row):
+            if value != ".":
+                continue
+            if is_crossroad(forest, x, y):
+                c.append(Point(x, y))
+    return c
+
+
+points = determine_crossroads(forest)
+
+
+def next_points(forest: List[List[str]], current: Point) -> List[Point]:
     nodes = []
     cx, cy = current.x, current.y
     for x, y in DIRECTIONS:
-        node = Node(cx + x, cy + y, current, current.distance + 1)
+        node = Point(cx + x, cy + y)
         if (
             node.x < 0
             or node.x >= len(forest[-1])
@@ -109,40 +170,40 @@ def determine_next_moves_2(forest: List[List[str]], current: Node) -> List[Node]
             continue
         if forest[node.y][node.x] == "#":
             continue
-        if (
-            current.prev is not None
-            and node.y == current.prev.y
-            and node.x == current.prev.x
-        ):
+        if node.y == current.y and node.x == current.x:
             continue
         nodes.append(node)
     return nodes
 
 
-def walk_forest(
+def determine_edges(
     forest: List[List[str]],
-    current: Node,
-    target: Node,
-    paths: List[int],
-    path: List[Node],
+    current: Point,
+    points: List[Point],
+    edges: List[Edge],
+    path: List[Point],
     depth: int = 0,
 ):
-    if current.x == target.x and current.y == target.y:
-        paths.append(depth)
-        return
     if current in path:
         return
+    if current in points and depth != 0:
+        edges.append(Edge(current, depth))
+        return
     path.append(current)
-    for node in determine_next_moves_2(forest, current):
-        walk_forest(forest, node, target, paths, path, depth + 1)
+    for point in next_points(forest, current):
+        determine_edges(forest, point, points, edges, path, depth + 1)
     path.pop()
 
 
-def dfs(forest: List[List[str]], start: Node, target: Node) -> int:
-    paths = []
+graph = {}
+
+for point in points:
+    edges = []
     path = []
-    walk_forest(forest, start, target, paths, path, 0)
-    return max(paths)
+    determine_edges(forest, point, points, edges, path)
+    graph[point] = edges[:]
 
+START = Point(1, 0)
+END = Point(len(forest[-1]) - 2, len(forest) - 1)
 
-print(dfs(forest, start, end))
+print(dfs(graph, START, END))
