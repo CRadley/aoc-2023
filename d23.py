@@ -128,7 +128,7 @@ def walk_forest(
     depth: int = 0,
 ):
     if current.x == target.x and current.y == target.y:
-        paths.append({(path[i].x, path[i].y): i + 1 for i in range(depth)})
+        paths.append(depth)
         return
     if current in path:
         return
@@ -142,8 +142,7 @@ def dfs(forest: List[List[str]], start: Node, target: Node) -> int:
     paths = []
     path = []
     walk_forest(forest, start, target, paths, path, 0)
-    lengths = [max(p.values()) for p in paths]
-    return max(lengths)
+    return max(paths)
 
 
 print(dfs(forest, start, end))
