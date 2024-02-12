@@ -50,25 +50,48 @@ def part_one(seeds: List[int], ranges) -> int:
     return min(p1)
 
 
-def part_two(seed_ranges: List[range], ranges) -> int:
-    p2 = 0
-    while True:
-        current = p2
-        for _r in ranges[::-1]:
-            for _, dest, offset in _r:
-                if current in dest:
-                    current -= offset
+def determine_crossover(prev_range: range, next_range: range) -> range:
+    return range(
+        max(prev_range[0], next_range[0]), min(prev_range[-1], next_range[-1]) + 1
+    )
+
+
+def part_two(seed_ranges: List[range], maps) -> int:
+    current_ranges = seed_ranges[:]
+    for i, m in enumerate(maps):
+        print(i)
+        next_ranges = []
+        queue = current_ranges[:]
+        while queue:
+            current = queue.pop(0)
+            print(current)
+            for r in m:
+                crossover = determine_crossover(current, r[0])
+                if len(crossover) == 0:
+                    if r == m[-1]:
+                        next_ranges.append(current)
+                    continue
+                elif crossover == current:
+                    next_ranges.append(range(current[0] + r[2], current[-1] + r[2] + 1))
                     break
-        for sr in seed_ranges:
-            if current in sr:
-                return p2
-        p2 += 1
+                else:
+                    if min(current) == min(crossover):
+                        queue.append(range(max(crossover) + 1, max(current) + 1))
+                    else:
+                        queue.append(range(min(current), min(crossover)))
+        current_ranges = next_ranges[:]
+    return min(min(r) for r in current_ranges)
 
 
 seeds = determine_seeds(lines[0])
 seed_ranges = determine_seed_ranges(seeds)
 ranges = determine_map_ranges(lines[2:])
+print("P1 Start")
 p1 = part_one(seeds, ranges)
+print("P1 Finish")
+print("P2 Start")
 p2 = part_two(seed_ranges, ranges)
-assert p1 == 35, p1
-assert p2 == 46, p2
+print("P2 Finish")
+
+assert p1 == 551761867, p1
+assert p2 == 57451709, p2
