@@ -67,7 +67,7 @@ def part_two(seed_ranges, maps):
         while queue:
             current = queue.pop(0)
             for r in m:
-                subrange, lower, upper = determine_crossovers(*current, r[0], r[1])
+                subrange, lower, upper = determine_crossovers(*current, *r[0:2])
                 if not subrange and not lower and not upper and r == m[-1]:
                     next_queue.append(current)
                 if lower:
