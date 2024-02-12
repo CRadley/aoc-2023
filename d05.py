@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 with open("inputs/d05") as file:
     lines = [line for line in file.read().splitlines() if line]
 
