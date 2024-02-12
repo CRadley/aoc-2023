@@ -10,7 +10,7 @@ def determine_seeds(seed_line: str) -> List[int]:
 
 
 def determine_seed_ranges(seeds: List[int]) -> List[range]:
-    return [(seeds[i], seeds[i] + seeds[i + 1]) for i in range(0, len(seeds), 2)]
+    return [range(seeds[i], seeds[i] + seeds[i + 1]) for i in range(0, len(seeds), 2)]
 
 
 def determine_map_ranges(map_lines: List[str]):
@@ -29,11 +29,9 @@ def determine_map_ranges(map_lines: List[str]):
         for dest_start, source_start, length in m:
             ranges[i].append(
                 (
-                    source_start,
-                    source_start + length,
-                    dest_start,
-                    length,
-                    dest_start + length,
+                    range(source_start, source_start + length),
+                    range(dest_start, dest_start + length),
+                    dest_start - source_start,
                 )
             )
     return ranges
@@ -44,9 +42,9 @@ def part_one(seeds: List[int], ranges) -> int:
     for seed in seeds:
         current = seed
         for _r in ranges:
-            for r in _r:
-                if r[0] <= current <= r[1]:
-                    current += r[2] - r[0]
+            for source, _, offset in _r:
+                if current in source:
+                    current += offset
                     break
         p1.append(current)
     return min(p1)
@@ -57,12 +55,12 @@ def part_two(seed_ranges: List[range], ranges) -> int:
     while True:
         current = p2
         for _r in ranges[::-1]:
-            for r in _r:
-                if r[2] <= current < r[4]:
-                    current -= r[2] - r[0]
+            for _, dest, offset in _r:
+                if current in dest:
+                    current -= offset
                     break
         for sr in seed_ranges:
-            if sr[0] <= current <= sr[1]:
+            if current in sr:
                 return p2
         p2 += 1
 
@@ -70,5 +68,7 @@ def part_two(seed_ranges: List[range], ranges) -> int:
 seeds = determine_seeds(lines[0])
 seed_ranges = determine_seed_ranges(seeds)
 ranges = determine_map_ranges(lines[2:])
-assert part_one(seeds, ranges) == 35
-assert part_two(seed_ranges, ranges) == 46
+p1 = part_one(seeds, ranges)
+p2 = part_two(seed_ranges, ranges)
+assert p1 == 35, p1
+assert p2 == 46, p2
