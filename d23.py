@@ -12,12 +12,12 @@ DIRECTIONS = [
     (-1, 0),
 ]
 
-SUB_DIRECTIONS_LEFT = [
+SUB_DIRECTIONS_LDR = [
     (1, 0),
     (-1, 0),
     (0, 1),
 ]
-SUB_DIRECTIONS_UP = [
+SUB_DIRECTIONS_UDR = [
     (1, 0),
     (0, -1),
     (0, 1),
@@ -173,10 +173,25 @@ def determine_crossroads(forest: List[List[str]]):
 points = determine_crossroads(forest)
 
 
+def determine_directions(forest, x, y):
+    try:
+        n = (forest[y + 1][x], forest[y][x + 1], forest[y - 1][x], forest[y][x - 1])
+        if sum(i in (">", "v") for i in n) == 3:
+            if forest[y + 1][x] == "#":
+                return SUB_DIRECTIONS_UDR
+            elif forest[y][x + 1] == "#":
+                return SUB_DIRECTIONS_LDR
+            elif forest[y - 1][x] == "#" or forest[y][x - 1] == "#":
+                return SUB_DIRECTIONS_DR
+        return DIRECTIONS
+    except IndexError:
+        return DIRECTIONS
+
+
 def next_points(forest: List[List[str]], current: Point) -> List[Point]:
     nodes = []
     cx, cy = current.x, current.y
-    for x, y in DIRECTIONS:
+    for x, y in determine_directions(forest, cx, cy):
         node = Point(cx + x, cy + y)
         if (
             node.x < 0
@@ -190,27 +205,6 @@ def next_points(forest: List[List[str]], current: Point) -> List[Point]:
         if node.y == current.y and node.x == current.x:
             continue
         nodes.append(node)
-    if len(nodes) == 3:
-        nodes = []
-        sd = (
-            SUB_DIRECTIONS_UP
-            if forest[cy + 1][cx] == "#"
-            else SUB_DIRECTIONS_LEFT if forest[cy][cx + 1] == "#" else SUB_DIRECTIONS_DR
-        )
-        for x, y in sd:
-            node = Point(cx + x, cy + y)
-            if (
-                node.x < 0
-                or node.x >= len(forest[-1])
-                or node.y < 0
-                or node.y >= len(forest)
-            ):
-                continue
-            if forest[node.y][node.x] == "#":
-                continue
-            if node.y == current.y and node.x == current.x:
-                continue
-            nodes.append(node)
     return nodes
 
 
@@ -242,5 +236,4 @@ for point in points:
 
 START = Point(1, 0)
 END = Point(len(forest[-1]) - 2, len(forest) - 1)
-
 print(dfs(graph, START, END))
