@@ -12,6 +12,21 @@ DIRECTIONS = [
     (-1, 0),
 ]
 
+SUB_DIRECTIONS_LEFT = [
+    (1, 0),
+    (-1, 0),
+    (0, 1),
+]
+SUB_DIRECTIONS_UP = [
+    (1, 0),
+    (0, -1),
+    (0, 1),
+]
+SUB_DIRECTIONS_DR = [
+    (1, 0),
+    (0, 1),
+]
+
 
 @dataclass
 class Node:
@@ -108,9 +123,10 @@ def walk_graph(
     graph: Dict[Point, List[Edge]],
     current: Point,
     target: Point,
-    paths: List[int],
+    paths: List[set],
     path: List[Node],
     depth: int = 0,
+    steps: int = 0,
 ):
     if current in path:
         return
@@ -119,14 +135,15 @@ def walk_graph(
         return
     path.append(current)
     for edge in graph[current]:
-        walk_graph(graph, edge.to, target, paths, path, depth + edge.weight)
+        walk_graph(graph, edge.to, target, paths, path, depth + edge.weight, steps + 1)
+
     path.pop()
 
 
-def dfs(forest: List[List[str]], start: Node, target: Node) -> int:
+def dfs(graph: Dict[Point, List[Edge]], start: Node, target: Node) -> int:
     paths = []
     path = []
-    walk_graph(forest, start, target, paths, path)
+    walk_graph(graph, start, target, paths, path)
     return max(paths)
 
 
@@ -173,6 +190,27 @@ def next_points(forest: List[List[str]], current: Point) -> List[Point]:
         if node.y == current.y and node.x == current.x:
             continue
         nodes.append(node)
+    if len(nodes) == 3:
+        nodes = []
+        sd = (
+            SUB_DIRECTIONS_UP
+            if forest[cy + 1][cx] == "#"
+            else SUB_DIRECTIONS_LEFT if forest[cy][cx + 1] == "#" else SUB_DIRECTIONS_DR
+        )
+        for x, y in sd:
+            node = Point(cx + x, cy + y)
+            if (
+                node.x < 0
+                or node.x >= len(forest[-1])
+                or node.y < 0
+                or node.y >= len(forest)
+            ):
+                continue
+            if forest[node.y][node.x] == "#":
+                continue
+            if node.y == current.y and node.x == current.x:
+                continue
+            nodes.append(node)
     return nodes
 
 
@@ -196,7 +234,6 @@ def determine_edges(
 
 
 graph = {}
-
 for point in points:
     edges = []
     path = []
