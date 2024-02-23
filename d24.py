@@ -9,29 +9,26 @@ with open("inputs/d24") as file:
 
 
 def paths_intersect_in_future(h1, h2, t_min, t_max) -> bool:
-    try:
-        g1 = h1[4] / h1[3]
-        g2 = h2[4] / h2[3]
-        if g1 == g2:
-            return False
-        c1 = h1[1] - g1 * h1[0]
-        c2 = h2[1] - g2 * h2[0]
-
-        x = (c1 - c2) / (g2 - g1)
-        y = g1 * x + c1
-        # Determine if x, y is in that past for h1
-        if h1[0] > x and h1[3] > 0 or h1[1] > y and h1[4] > 0:
-            return False
-        if h1[0] < x and h1[3] < 0 or h1[1] < y and h1[4] < 0:
-            return False
-        # Determine if x, y is in that past for h2
-        if h2[0] > x and h2[3] > 0 or h2[1] > y and h2[4] > 0:
-            return False
-        if h2[0] < x and h2[3] < 0 or h2[1] < y and h2[4] < 0:
-            return False
-        return t_min <= x <= t_max and t_min <= y <= t_max
-    except ZeroDivisionError:
+    g1 = h1[4] / h1[3]
+    g2 = h2[4] / h2[3]
+    if g1 == g2:
         return False
+    c1 = h1[1] - g1 * h1[0]
+    c2 = h2[1] - g2 * h2[0]
+
+    x = (c1 - c2) / (g2 - g1)
+    y = g1 * x + c1
+    # Determine if x, y is in that past for h1
+    if h1[0] > x and h1[3] > 0 or h1[1] > y and h1[4] > 0:
+        return False
+    if h1[0] < x and h1[3] < 0 or h1[1] < y and h1[4] < 0:
+        return False
+    # Determine if x, y is in that past for h2
+    if h2[0] > x and h2[3] > 0 or h2[1] > y and h2[4] > 0:
+        return False
+    if h2[0] < x and h2[3] < 0 or h2[1] < y and h2[4] < 0:
+        return False
+    return t_min <= x <= t_max and t_min <= y <= t_max
 
 
 def part_one(hailstones) -> int:
