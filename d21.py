@@ -26,19 +26,31 @@ def determine_steps(garden, position, resolution):
     return x
 
 
-queue = determine_steps(garden, starting_point, resolution)
-steps = 64
-for _ in range(steps - 1):
-    next_steps = []
-    while queue:
-        position = queue.pop(0)
-        next_steps.extend(determine_steps(garden, position, resolution))
-    queue = list(set(next_steps))
+def determine_reachable_points(
+    garden: List[int],
+    starting_point: int,
+    resolution: int,
+    steps,
+) -> int:
+    queue = [starting_point]
+    visited = set([starting_point])
+    data = {0: 1}
+    for i in range(steps):
+        next_steps = []
+        while queue:
+            position = queue.pop(0)
+            _next = determine_steps(garden, position, resolution)
+            for _n in _next:
+                if _n in visited:
+                    continue
+                next_steps.append(_n)
+            visited.add(position)
+        queue = list(set(next_steps))
+        if i == 0:
+            data[i + 1] = len(queue)
+        else:
+            data[i + 1] = data[i - 1] + len(queue)
+    return data[steps]
 
 
-for p in queue:
-    garden[p] = "O"
-
-for i in range(0, len(garden), resolution):
-    print("".join(garden[i : i + resolution]))
-print(len(queue))
+print(determine_reachable_points(garden, starting_point, resolution, 64))
