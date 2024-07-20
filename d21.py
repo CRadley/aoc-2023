@@ -52,4 +52,15 @@ def determine_reachable_points(
     return data[steps]
 
 
-print(determine_reachable_points(garden, starting_point, resolution, 64))
+def part_one(garden: List[int], starting_point: int, resolution: int) -> int:
+    return determine_reachable_points(garden, starting_point, resolution, 64)
+
+
+def part_two(
+    garden: List[int], starting_point: int, resolution: int, steps: int
+) -> int:
+    return -1
+
+
+print(part_one(garden, starting_point, resolution))
+print(part_two(garden, starting_point, resolution, 64))
