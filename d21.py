@@ -39,11 +39,10 @@ def determine_reachable_points(
         next_steps = []
         while queue:
             position = queue.pop(0)
-            _next = determine_steps(garden, position, resolution)
-            for _n in _next:
-                if _n in visited:
+            for n in determine_steps(garden, position, resolution):
+                if n in visited:
                     continue
-                next_steps.append(_n)
+                next_steps.append(n)
             visited.add(position)
         queue = list(set(next_steps))
         if i == 0:
