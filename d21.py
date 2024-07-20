@@ -56,7 +56,7 @@ def part_one(garden: List[int], starting_point: int, resolution: int) -> int:
 
 
 def determine_cardinal_gardens(steps: int, resolution: int) -> int:
-    return ((steps - resolution // 2) // resolution) - 1
+    return (steps - resolution // 2) // resolution
 
 
 def _determine_inner_major_garden_number(cardinal_gardens: int) -> int:
@@ -71,6 +71,11 @@ def determine_inner_even_odd_garden_number(cardinal_gardens: int) -> Tuple[int, 
     """
     odd, even
     """
+    if cardinal_gardens % 2 == 0:
+        return (
+            _determine_inner_minor_garden_number(cardinal_gardens),
+            _determine_inner_major_garden_number(cardinal_gardens),
+        )
     return (
         _determine_inner_major_garden_number(cardinal_gardens),
         _determine_inner_minor_garden_number(cardinal_gardens),
@@ -82,8 +87,12 @@ def part_two(
 ) -> int:
     cardinal_gardens = determine_cardinal_gardens(steps, resolution)
     odd_gardens, even_gardens = determine_inner_even_odd_garden_number(cardinal_gardens)
-    full_odd = determine_reachable_points(garden, starting_point, resolution, 1001)
-    full_even = determine_reachable_points(garden, starting_point, resolution, 1000)
+    full_odd = determine_reachable_points(
+        garden, starting_point, resolution, resolution
+    )
+    full_even = determine_reachable_points(
+        garden, starting_point, resolution, resolution + 1
+    )
     ct = determine_reachable_points(
         garden, starting_point + (resolution // 2) * resolution, resolution, resolution
     )
@@ -128,12 +137,20 @@ def part_two(
             * sum(
                 [
                     determine_reachable_points(
-                        garden, resolution * (resolution - 1), resolution, 65
+                        garden,
+                        resolution * (resolution - 1),
+                        resolution,
+                        resolution // 2,
                     ),
-                    determine_reachable_points(garden, 0, resolution, 65),
-                    determine_reachable_points(garden, resolution - 1, resolution, 65),
+                    determine_reachable_points(garden, 0, resolution, resolution // 2),
                     determine_reachable_points(
-                        garden, (resolution * resolution) - 1, resolution, 65
+                        garden, resolution - 1, resolution, resolution // 2
+                    ),
+                    determine_reachable_points(
+                        garden,
+                        (resolution * resolution) - 1,
+                        resolution,
+                        resolution // 2,
                     ),
                 ]
             )
@@ -144,5 +161,13 @@ def part_two(
 print(part_one(garden, starting_point, resolution))
 print(part_two(garden, starting_point, resolution, 26501365))
 # 608191615942056 too low......
+# 608197625871224
+# 608197628714827
 # 608193921334414
 # 608191615935010
+# 607905138905010
+
+
+assert (4, 9) == determine_inner_even_odd_garden_number(2)
+assert (16, 9) == determine_inner_even_odd_garden_number(3)
+assert (16, 25) == determine_inner_even_odd_garden_number(4)
