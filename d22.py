@@ -4,9 +4,16 @@ from re import findall
 
 @dataclass
 class Brick:
-    x: tuple
-    y: tuple
-    z: tuple
+    coords: set[tuple[int, int]]
+    z: int
+    _z: int
+
+
+def create_coords(x, _x, y, _y) -> set[tuple[int, int]]:
+    if x == _x:
+        return set((x, y) for y in range(y, _y + 1))
+    else:
+        return set((x, y) for x in range(x, _x + 1))
 
 
 bricks = []
@@ -17,59 +24,47 @@ with open("inputs/d22") as bricks_file:
         )
         bricks.append(
             Brick(
-                range(values[0], values[3] + 1),
-                range(values[1], values[4] + 1),
-                range(values[2], values[5] + 1),
+                create_coords(values[0], values[3], values[1], values[4]),
+                values[2],
+                values[5],
             )
         )
 
 
-def is_collision(b1, b2) -> bool:
-    if len(b1.x) == 1:
-        b1c = set((min(b1.x), y) for y in b1.y)
-    else:
-        b1c = set((x, min(b1.y)) for x in b1.x)
-    if len(b2.x) == 1:
-        b2c = set((min(b2.x), y) for y in b2.y)
-    else:
-        b2c = set((x, min(b2.y)) for x in b2.x)
-    return bool(b1c & b2c)
-
-
-is_collision(bricks[0], bricks[1])
-
-bricks.sort(key=lambda brick: min(brick.z))
+bricks.sort(key=lambda brick: brick.z)
+print("execute falling")
 # falling....
 for brick in bricks:
-    if min(brick.z) == 1:
+    if brick.z == 1:
         continue
     stable = False
     while True:
-        if stable or min(brick.z) == 1:
+        if stable or brick.z == 1:
             break
-        _bricks = [_brick for _brick in bricks if max(_brick.z) == min(brick.z) - 1]
-        brick.z = range(min(brick.z) - 1, max(brick.z))
+        _bricks = [_brick for _brick in bricks if _brick._z == brick.z - 1]
+        brick.z -= 1
+        brick._z -= 1
         for _brick in _bricks:
-            if is_collision(brick, _brick) and max(_brick.z) == min(brick.z):
-                brick.z = range(min(brick.z) + 1, max(brick.z) + 2)
+            if bool(brick.coords & _brick.coords):
+                brick.z += 1
+                brick._z += 1
                 stable = True
                 break
 
-
+print("next part")
+bricks.sort(key=lambda brick: brick.z)
 p1 = 0
 for i in range(len(bricks)):
+    print(i)
     new_bricks = bricks[0:i] + bricks[i + 1 : len(bricks)]
     for n_b in new_bricks:
-        if min(n_b.z) == 1:
+        if n_b.z == 1:
             continue
         _bricks = []
         for _brick in new_bricks:
-            if max(_brick.z) == min(n_b.z) - 1:
+            if _brick._z == n_b.z - 1 and n_b.coords & _brick.coords:
                 _bricks.append(_brick)
-        if (
-            any(not is_collision(n_b, _brick) for _brick in _bricks)
-            or len(_bricks) == 0
-        ):
+        if len(_bricks) == 0:
             break
     else:
         p1 += 1
