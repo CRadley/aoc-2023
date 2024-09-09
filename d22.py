@@ -59,21 +59,21 @@ print("Part 1...")
 bricks.sort(key=lambda brick: brick.z)
 fall(bricks)
 p1 = 0
-# for i in range(len(bricks)):
-#     print(i)
-#     new_bricks = bricks[0:i] + bricks[i + 1 : len(bricks)]
-#     for n_b in new_bricks:
-#         if n_b.z == 1:
-#             continue
-#         _bricks = []
-#         for _brick in new_bricks:
-#             if _brick._z == n_b.z - 1 and n_b.coords & _brick.coords:
-#                 _bricks.append(_brick)
-#         if len(_bricks) == 0:
-#             break
-#     else:
-#         p1 += 1
-# print("Value:", p1)
+for i in range(len(bricks)):
+    print(i)
+    new_bricks = bricks[0:i] + bricks[i + 1 : len(bricks)]
+    for n_b in new_bricks:
+        if n_b.z == 1:
+            continue
+        _bricks = []
+        for _brick in new_bricks:
+            if _brick._z == n_b.z - 1 and n_b.coords & _brick.coords:
+                _bricks.append(_brick)
+        if len(_bricks) == 0:
+            break
+    else:
+        p1 += 1
+print("Value:", p1)
 p2 = 0
 print("Part 2...")
 for i in range(len(bricks)):
@@ -100,7 +100,3 @@ for i in range(len(bricks)):
     print(i, x)
     p2 += x
 print("Value:", p2)
-
-
-def part_one(bricks: list[Brick]) -> int:
-    pass
